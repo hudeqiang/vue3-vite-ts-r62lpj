@@ -37,6 +37,7 @@ const routes: Array<RouteRecordRaw> = [
     beforeEnter: (to: any, from: any, next: any) => {
       console.log('路由独享守卫beforeEnter');
       let role = localStorage.getItem('role') || '';
+      console.log('role:', role);
       if (role != 'admin') {
         next('/NotFound');
       } else {
@@ -70,29 +71,25 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
   //判断是否有权限
-  // if (!localStorage.getItem("role")) {
-  //   try{
-  //     axios({
-  //       method: 'POST',
-  //       url: "https://your-api.com/user/role",
-  //       responseType: 'blob',
-  //       headers: { 'Authorization': 'Bearer uyuuu'}
-  //     }).then(res => {
-  //       localStorage.setItem("role",res.data.data.role)
-  //       next()
-  //       console.log(res)
-  //     })
-  //   }
-  //   catch(e){
-  //     localStorage.setItem("role","admin")
-  //     console.log(e)
-  //     next()
-  //   }
-
-  // }
-  // else{
-  //   next()
-  // }
-  next();
+  if (!localStorage.getItem('role') && to.path == '/Signup') {
+    axios({
+      method: 'POST',
+      url: 'https://your-api.com/user/role',
+      responseType: 'blob',
+      headers: { Authorization: 'Bearer uyuuu' },
+    })
+      .then((res) => {
+        localStorage.setItem('role', res.data.data.role);
+        next();
+        console.log(res);
+      })
+      .catch((e) => {
+        console.log('ex', e);
+        localStorage.setItem('role', '123'); //admin   可调试
+        next();
+      });
+  } else {
+    next();
+  }
 });
 export default router;
